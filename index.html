@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Mr. Crown - Rusty Lake tarzı sürreal bulmaca oyunu. Aynadaki mesajı çöz, gramofonu çalıştır, sandığı aç.">
+    <title>Mr. Crown | The Raven's Room</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Ambient particles -->
+    <div id="particles"></div>
+
+    <!-- Vignette overlay -->
+    <div class="vignette"></div>
+
+    <!-- Game title -->
+    <div id="game-title" class="game-title">
+        <div class="title-raven">
+            <img src="mr-crown-logo.png" alt="Mr. Crown"
+                style="width: 240px; height: auto; border-radius: 12px; border: 2px solid rgba(196, 163, 90, 0.4); box-shadow: 0 0 20px rgba(0,0,0,0.6);">
+        </div>
+        <h1>Mr. Crown</h1>
+        <p class="subtitle">Tıkla ve keşfet...</p>
+    </div>
+
+    <!-- Main room container -->
+    <div id="room">
+        <!-- Room background elements -->
+        <div class="room-wall"></div>
+        <div class="room-floor"></div>
+        <div class="wainscoting"></div>
+        <div class="baseboard"></div>
+
+        <!-- Hanging lamp -->
+        <div class="lamp">
+            <div class="lamp-chain"></div>
+            <div class="lamp-shade"></div>
+            <div class="lamp-bulb"></div>
+            <div class="lamp-glow"></div>
+        </div>
+
+        <!-- Wallpaper pattern -->
+        <div class="wallpaper-pattern"></div>
+
+        <!-- Crack details on wall -->
+        <svg class="wall-crack" viewBox="0 0 200 400" width="200" height="400">
+            <path d="M100 0 L102 40 L98 80 L105 110 L95 140 L100 160" stroke="rgba(0,0,0,0.15)" fill="none"
+                stroke-width="1" />
+            <path d="M100 160 L110 180 L105 200" stroke="rgba(0,0,0,0.1)" fill="none" stroke-width="0.5" />
+            <path d="M100 160 L90 185" stroke="rgba(0,0,0,0.08)" fill="none" stroke-width="0.5" />
+        </svg>
+
+        <!-- ==================== MIRROR ==================== -->
+        <div id="mirror" class="interactive-object" onclick="handleMirrorClick()">
+            <div class="mirror-frame">
+                <div class="mirror-frame-ornament top-left"></div>
+                <div class="mirror-frame-ornament top-right"></div>
+                <div class="mirror-frame-ornament bottom-left"></div>
+                <div class="mirror-frame-ornament bottom-right"></div>
+            </div>
+            <div class="mirror-surface">
+                <div class="mirror-reflection"></div>
+                <div class="mirror-fog" id="mirror-fog"></div>
+                <div class="mirror-text" id="mirror-text">5391</div>
+                <div class="mirror-raven" id="mirror-raven">
+                    <svg viewBox="0 0 120 100" width="120" height="100">
+                        <path
+                            d="M60 10 C35 10 15 28 15 48 C15 60 22 70 32 75 L22 95 L34 83 L40 90 L44 78 C49 80 54 81 60 81 C66 81 71 80 76 78 L80 90 L86 83 L98 95 L88 75 C98 70 105 60 105 48 C105 28 85 10 60 10Z"
+                            fill="rgba(0,0,0,0.85)" />
+                        <circle cx="45" cy="40" r="5" fill="#c4a35a" />
+                        <circle cx="45" cy="40" r="2.5" fill="#000" />
+                        <circle cx="75" cy="40" r="5" fill="#c4a35a" />
+                        <circle cx="75" cy="40" r="2.5" fill="#000" />
+                        <path d="M52 52 L60 48 L68 52 L60 56Z" fill="#333" />
+                    </svg>
+                </div>
+            </div>
+            <div class="mirror-label">Ayna</div>
+        </div>
+
+        <!-- ==================== GRAMOPHONE & DRESSER ==================== -->
+        <div id="gramophone-area">
+            <!-- Dresser / Komodin -->
+            <div class="dresser">
+                <div class="dresser-top"></div>
+                <div class="dresser-body">
+                    <div class="dresser-drawer" id="dresser-drawer">
+                        <div class="drawer-handle"></div>
+                        <div class="drawer-keyhole"></div>
+                    </div>
+                    <div class="dresser-drawer bottom-drawer">
+                        <div class="drawer-handle"></div>
+                    </div>
+                </div>
+                <div class="dresser-leg left"></div>
+                <div class="dresser-leg right"></div>
+            </div>
+
+            <!-- Gramophone -->
+            <div id="gramophone" class="interactive-object" onclick="handleGramophoneClick()">
+                <div class="gramophone-base"></div>
+                <div class="gramophone-turntable">
+                    <div class="gramophone-record" id="gramophone-record">
+                        <div class="record-groove r1"></div>
+                        <div class="record-groove r2"></div>
+                        <div class="record-groove r3"></div>
+                        <div class="record-label"></div>
+                    </div>
+                </div>
+                <div class="gramophone-arm" id="gramophone-arm">
+                    <div class="arm-joint"></div>
+                    <div class="arm-bar"></div>
+                    <div class="arm-head"></div>
+                </div>
+                <div class="gramophone-horn" id="gramophone-horn">
+                    <svg viewBox="0 0 120 100" width="120" height="100">
+                        <path d="M10 50 Q10 30 30 25 L90 5 Q120 0 120 20 L120 80 Q120 100 90 95 L30 75 Q10 70 10 50Z"
+                            fill="#8B7355" stroke="#6B5335" stroke-width="2" />
+                        <path d="M15 50 Q15 35 32 30 L85 12 Q105 8 105 22 L105 78 Q105 92 85 88 L32 70 Q15 65 15 50Z"
+                            fill="#9B8365" opacity="0.5" />
+                        <ellipse cx="12" cy="50" rx="5" ry="18" fill="#5B4325" stroke="#4B3315" stroke-width="1" />
+                    </svg>
+                </div>
+                <div class="gramophone-label">Gramofon</div>
+            </div>
+
+            <!-- Secret drawer content (key) -->
+            <div class="secret-drawer" id="secret-drawer">
+                <div class="secret-drawer-inner">
+                    <div class="key-in-drawer" id="key-in-drawer" onclick="pickUpKey()">
+                        <svg viewBox="0 0 80 30" width="60" height="22">
+                            <rect x="30" y="12" width="48" height="6" rx="2" fill="#C0C0C0" stroke="#888"
+                                stroke-width="1" />
+                            <rect x="68" y="8" width="4" height="14" rx="1" fill="#A0A0A0" />
+                            <rect x="60" y="10" width="3" height="10" rx="1" fill="#A0A0A0" />
+                            <circle cx="18" cy="15" r="14" fill="none" stroke="#C0C0C0" stroke-width="4" />
+                            <circle cx="18" cy="15" r="6" fill="none" stroke="#888" stroke-width="2" />
+                        </svg>
+                        <span class="key-label">Gümüş Anahtar</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== CHEST ==================== -->
+        <div id="chest" class="interactive-object" onclick="handleChestClick()">
+            <div class="chest-body">
+                <div class="chest-plank c1"></div>
+                <div class="chest-plank c2"></div>
+                <div class="chest-plank c3"></div>
+                <div class="chest-band top-band"></div>
+                <div class="chest-band bottom-band"></div>
+                <div class="chest-lock" id="chest-lock">
+                    <div class="lock-plate"></div>
+                    <div class="lock-keyhole"></div>
+                </div>
+            </div>
+            <div class="chest-lid" id="chest-lid">
+                <div class="chest-plank c1"></div>
+                <div class="chest-plank c2"></div>
+                <div class="chest-band lid-band"></div>
+            </div>
+            <div class="chest-hinge left-hinge"></div>
+            <div class="chest-hinge right-hinge"></div>
+            <div class="chest-label">Sandık</div>
+
+            <!-- Black cube inside chest -->
+            <div class="black-cube-container" id="black-cube-container">
+                <div class="black-cube" id="black-cube" onclick="event.stopPropagation(); handleCubeClick();">
+                    <div class="cube-face front"></div>
+                    <div class="cube-face back"></div>
+                    <div class="cube-face right-f"></div>
+                    <div class="cube-face left-f"></div>
+                    <div class="cube-face top-f"></div>
+                    <div class="cube-face bottom-f"></div>
+                    <div class="cube-glow"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== COBWEBS ==================== -->
+        <svg class="cobweb top-left-web" viewBox="0 0 100 100" width="80" height="80">
+            <path d="M0 0 Q50 10 100 100" stroke="rgba(255,255,255,0.06)" fill="none" stroke-width="0.5" />
+            <path d="M0 0 Q30 30 60 100" stroke="rgba(255,255,255,0.04)" fill="none" stroke-width="0.5" />
+            <path d="M0 0 Q10 50 30 100" stroke="rgba(255,255,255,0.04)" fill="none" stroke-width="0.5" />
+            <path d="M0 15 Q40 20 80 80" stroke="rgba(255,255,255,0.03)" fill="none" stroke-width="0.3" />
+        </svg>
+
+        <svg class="cobweb top-right-web" viewBox="0 0 100 100" width="80" height="80">
+            <path d="M100 0 Q50 10 0 100" stroke="rgba(255,255,255,0.06)" fill="none" stroke-width="0.5" />
+            <path d="M100 0 Q70 30 40 100" stroke="rgba(255,255,255,0.04)" fill="none" stroke-width="0.5" />
+            <path d="M100 0 Q90 50 70 100" stroke="rgba(255,255,255,0.04)" fill="none" stroke-width="0.5" />
+        </svg>
+    </div>
+
+    <!-- ==================== INVENTORY BAR ==================== -->
+    <div id="inventory">
+        <div class="inventory-label">ENVANTER</div>
+        <div class="inventory-slots">
+            <div class="inventory-slot" id="key-slot">
+                <svg viewBox="0 0 80 30" width="40" height="15">
+                    <rect x="30" y="12" width="48" height="6" rx="2" fill="#C0C0C0" stroke="#888" stroke-width="1" />
+                    <rect x="68" y="8" width="4" height="14" rx="1" fill="#A0A0A0" />
+                    <rect x="60" y="10" width="3" height="10" rx="1" fill="#A0A0A0" />
+                    <circle cx="18" cy="15" r="14" fill="none" stroke="#C0C0C0" stroke-width="4" />
+                    <circle cx="18" cy="15" r="6" fill="none" stroke="#888" stroke-width="2" />
+                </svg>
+                <span>Gümüş Anahtar</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CODE INPUT MODAL ==================== -->
+    <div id="code-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-gramophone-icon">
+                <svg viewBox="0 0 60 50" width="60" height="50">
+                    <ellipse cx="25" cy="40" rx="20" ry="8" fill="#5B4325" />
+                    <path d="M15 40 Q15 25 30 20 L50 10 Q60 8 58 15 L58 35 Q60 42 50 40 L30 35 Q15 38 15 40Z"
+                        fill="#8B7355" stroke="#6B5335" stroke-width="1" />
+                </svg>
+            </div>
+            <p class="modal-text">Gramofon bir şifre bekliyor...</p>
+            <div class="code-input-container">
+                <input type="text" id="code-input" maxlength="4" placeholder="____" autocomplete="off">
+            </div>
+            <div class="modal-buttons">
+                <button id="code-submit" onclick="submitCode()">Gir</button>
+                <button id="code-cancel" onclick="closeModal()">İptal</button>
+            </div>
+            <p class="modal-hint" id="modal-hint"></p>
+        </div>
+    </div>
+
+    <!-- ==================== MESSAGE OVERLAY ==================== -->
+    <div id="message-overlay" class="message-overlay">
+        <p id="message-text"></p>
+    </div>
+
+    <!-- ==================== FINAL SCREEN ==================== -->
+    <div id="final-screen" class="final-screen">
+        <div class="final-content">
+            <div class="final-cube">
+                <div class="cube-face front"></div>
+                <div class="cube-face back"></div>
+                <div class="cube-face right-f"></div>
+                <div class="cube-face left-f"></div>
+                <div class="cube-face top-f"></div>
+                <div class="cube-face bottom-f"></div>
+            </div>
+            <p class="final-text" id="final-text">Sevgi asla azalmaz.</p>
+            <p class="final-subtitle">— Mr. Crown —</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
