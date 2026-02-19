@@ -253,19 +253,44 @@ function handleGramophoneClick() {
 }
 
 // ===== COLOR BOX SYSTEM =====
+const BOX_COUNT = 12;
 const PRIMARY_COLORS = ['#c41e3a', '#ffd500', '#0051ba']; // Red, Yellow, Blue
-const ALL_COLORS = ['#c41e3a', '#ffd500', '#0051ba', '#009e60', '#ff5800', '#8b00ff']; // + Green, Orange, Purple
-const COLOR_NAMES = { '#c41e3a': 'red', '#ffd500': 'yellow', '#0051ba': 'blue', '#009e60': 'green', '#ff5800': 'orange', '#8b00ff': 'purple' };
+const COLOR_NAMES = { '#c41e3a': 'red', '#ffd500': 'yellow', '#0051ba': 'blue' };
 
-let colorState = [-1, -1, -1]; // -1 = empty/dark
+let colorState = new Array(BOX_COUNT).fill(-1);
+
+/*
+  Rubik cube TOP face (from image):
+  Row 1: Yellow, Yellow, Orange    →  Y, Y, (R+Y pair)
+  Row 2: Yellow, Yellow, Green     →  Y, Y, (B+Y pair)
+  Row 3: Red,    Red,    Green     →  R, R, (B+Y pair)
+  
+  Grid layout (4 cols × 3 rows):
+  [0:Y]  [1:Y]  [2:R|Y] [3:Y|R]   ← Orange = Red+Yellow (either order)
+  [4:Y]  [5:Y]  [6:B|Y] [7:Y|B]   ← Green  = Blue+Yellow (either order)
+  [8:R]  [9:R]  [10:B|Y][11:Y|B]  ← Green  = Blue+Yellow (either order)
+  
+  180° rotated is also accepted (reverse the whole grid)
+*/
+
+// Normal answer: fixed positions + pair positions
+const NORMAL = {
+    fixed: { 0: 'yellow', 1: 'yellow', 4: 'yellow', 5: 'yellow', 8: 'red', 9: 'red' },
+    pairs: [[2, 3, 'red', 'yellow'], [6, 7, 'blue', 'yellow'], [10, 11, 'blue', 'yellow']]
+};
+
+// 180° rotated answer (whole grid reversed: pos0←pos11, pos1←pos10, etc.)
+const ROTATED = {
+    fixed: { 2: 'red', 3: 'red', 6: 'yellow', 7: 'yellow', 10: 'yellow', 11: 'yellow' },
+    pairs: [[0, 1, 'blue', 'yellow'], [4, 5, 'blue', 'yellow'], [8, 9, 'red', 'yellow']]
+};
 
 function openModal() {
     const modal = document.getElementById('code-modal');
     modal.classList.add('visible');
-    colorState = [-1, -1, -1];
+    colorState = new Array(BOX_COUNT).fill(-1);
     updateColorBoxes();
 
-    // Close on background click
     modal.onclick = function (e) {
         if (e.target === modal) closeModal();
     };
@@ -278,33 +303,39 @@ function closeModal() {
 }
 
 function cycleColor(boxIndex) {
-    const colors = boxIndex < 2 ? PRIMARY_COLORS : ALL_COLORS;
-    colorState[boxIndex] = (colorState[boxIndex] + 1) % colors.length;
+    colorState[boxIndex] = (colorState[boxIndex] + 1) % PRIMARY_COLORS.length;
     updateColorBoxes();
     checkColorCode();
 }
 
 function updateColorBoxes() {
-    for (let i = 0; i < 3; i++) {
-        const colors = i < 2 ? PRIMARY_COLORS : ALL_COLORS;
+    for (let i = 0; i < BOX_COUNT; i++) {
         const box = document.getElementById('color-box-' + (i + 1));
-        box.style.background = colorState[i] === -1 ? '#222' : colors[colorState[i]];
+        box.style.background = colorState[i] === -1 ? '#222' : PRIMARY_COLORS[colorState[i]];
     }
 }
 
 function getBoxColor(index) {
-    const colors = index < 2 ? PRIMARY_COLORS : ALL_COLORS;
     if (colorState[index] === -1) return 'empty';
-    return COLOR_NAMES[colors[colorState[index]]];
+    return COLOR_NAMES[PRIMARY_COLORS[colorState[index]]];
+}
+
+function matchesPattern(pattern) {
+    // Check fixed positions
+    for (const [pos, color] of Object.entries(pattern.fixed)) {
+        if (getBoxColor(Number(pos)) !== color) return false;
+    }
+    // Check pairs (either order)
+    for (const [a, b, c1, c2] of pattern.pairs) {
+        const ca = getBoxColor(a);
+        const cb = getBoxColor(b);
+        if (!((ca === c1 && cb === c2) || (ca === c2 && cb === c1))) return false;
+    }
+    return true;
 }
 
 function checkColorCode() {
-    const c1 = getBoxColor(0);
-    const c2 = getBoxColor(1);
-    const c3 = getBoxColor(2);
-
-    // Correct: (yellow, red, orange) OR (red, yellow, orange)
-    if (c3 === 'orange' && ((c1 === 'yellow' && c2 === 'red') || (c1 === 'red' && c2 === 'yellow'))) {
+    if (matchesPattern(NORMAL) || matchesPattern(ROTATED)) {
         setTimeout(() => {
             closeModal();
             activateGramophone();
