@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Mr. Crown - Rusty Lake tarzı sürreal bulmaca oyunu. Aynadaki mesajı çöz, gramofonu çalıştır, sandığı aç.">
+        content="Mr. Crown - A surreal puzzle game inspired by Rusty Lake. Solve the clues, activate the gramophone, unlock the chest.">
     <title>Mr. Crown | The Raven's Room</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
                 style="width: 240px; height: auto; border-radius: 12px; border: 2px solid rgba(196, 163, 90, 0.4); box-shadow: 0 0 20px rgba(0,0,0,0.6);">
         </div>
         <h1>Mr. Crown</h1>
-        <p class="subtitle">Tıkla ve keşfet...</p>
+        <p class="subtitle">Click and discover...</p>
     </div>
 
     <!-- Main room container -->
@@ -42,12 +42,24 @@
         <div class="baseboard"></div>
 
         <!-- Hanging lamp -->
-        <div class="lamp">
+        <div class="lamp" id="lamp" onclick="handleLampClick()" style="cursor:pointer;">
             <div class="lamp-chain"></div>
             <div class="lamp-shade"></div>
             <div class="lamp-bulb"></div>
             <div class="lamp-glow"></div>
         </div>
+
+        <!-- Hidden wall texts (visible when lamp is on) -->
+        <div class="wall-text wall-text-1" id="wall-text-1">9R1</div>
+        <div class="wall-text wall-text-2" id="wall-text-2">3Y2</div>
+        <div class="wall-text wall-text-3" id="wall-text-3">2W2</div>
+        <div class="wall-text wall-text-4" id="wall-text-4">1G1</div>
+        <div class="wall-text wall-text-5" id="wall-text-5">Top</div>
+        <div class="wall-text wall-text-6" id="wall-text-6">
+            <img src="electric-mixer.png" alt="mixer"
+                style="width:36px; height:36px; opacity:0.7; filter:sepia(0.5) brightness(1.2);">
+        </div>
+        <div class="wall-text wall-text-7" id="wall-text-7">What matters is the result</div>
 
         <!-- Wallpaper pattern -->
         <div class="wallpaper-pattern"></div>
@@ -60,32 +72,29 @@
             <path d="M100 160 L90 185" stroke="rgba(0,0,0,0.08)" fill="none" stroke-width="0.5" />
         </svg>
 
-        <!-- ==================== MIRROR ==================== -->
-        <div id="mirror" class="interactive-object" onclick="handleMirrorClick()">
-            <div class="mirror-frame">
-                <div class="mirror-frame-ornament top-left"></div>
-                <div class="mirror-frame-ornament top-right"></div>
-                <div class="mirror-frame-ornament bottom-left"></div>
-                <div class="mirror-frame-ornament bottom-right"></div>
+        <!-- ==================== SHELF WITH RUBIK'S CUBE ==================== -->
+        <div id="shelf-area">
+            <!-- Wall shelf -->
+            <div class="wall-shelf">
+                <div class="shelf-bracket left-bracket"></div>
+                <div class="shelf-bracket right-bracket"></div>
+                <div class="shelf-board"></div>
             </div>
-            <div class="mirror-surface">
-                <div class="mirror-reflection"></div>
-                <div class="mirror-fog" id="mirror-fog"></div>
-                <div class="mirror-text" id="mirror-text">5391</div>
-                <div class="mirror-raven" id="mirror-raven">
-                    <svg viewBox="0 0 120 100" width="120" height="100">
-                        <path
-                            d="M60 10 C35 10 15 28 15 48 C15 60 22 70 32 75 L22 95 L34 83 L40 90 L44 78 C49 80 54 81 60 81 C66 81 71 80 76 78 L80 90 L86 83 L98 95 L88 75 C98 70 105 60 105 48 C105 28 85 10 60 10Z"
-                            fill="rgba(0,0,0,0.85)" />
-                        <circle cx="45" cy="40" r="5" fill="#c4a35a" />
-                        <circle cx="45" cy="40" r="2.5" fill="#000" />
-                        <circle cx="75" cy="40" r="5" fill="#c4a35a" />
-                        <circle cx="75" cy="40" r="2.5" fill="#000" />
-                        <path d="M52 52 L60 48 L68 52 L60 56Z" fill="#333" />
-                    </svg>
+            <!-- Rubik's Cube on shelf -->
+            <div id="rubik-cube" class="interactive-object" onclick="handleRubikClick()">
+                <div class="rubik-flat">
+                    <div class="rubik-tile" style="background:#c41e3a;"></div>
+                    <div class="rubik-tile" style="background:#ff5800;"></div>
+                    <div class="rubik-tile" style="background:#009e60;"></div>
+                    <div class="rubik-tile" style="background:#0051ba;"></div>
+                    <div class="rubik-tile" style="background:#ffd500;"></div>
+                    <div class="rubik-tile" style="background:#c41e3a;"></div>
+                    <div class="rubik-tile" style="background:#ff5800;"></div>
+                    <div class="rubik-tile" style="background:#009e60;"></div>
+                    <div class="rubik-tile" style="background:#0051ba;"></div>
                 </div>
+
             </div>
-            <div class="mirror-label">Ayna</div>
         </div>
 
         <!-- ==================== GRAMOPHONE & DRESSER ==================== -->
@@ -131,7 +140,7 @@
                         <ellipse cx="12" cy="50" rx="5" ry="18" fill="#5B4325" stroke="#4B3315" stroke-width="1" />
                     </svg>
                 </div>
-                <div class="gramophone-label">Gramofon</div>
+
             </div>
 
             <!-- Secret drawer content (key) -->
@@ -146,7 +155,7 @@
                             <circle cx="18" cy="15" r="14" fill="none" stroke="#C0C0C0" stroke-width="4" />
                             <circle cx="18" cy="15" r="6" fill="none" stroke="#888" stroke-width="2" />
                         </svg>
-                        <span class="key-label">Gümüş Anahtar</span>
+                        <span class="key-label">Silver Key</span>
                     </div>
                 </div>
             </div>
@@ -172,7 +181,7 @@
             </div>
             <div class="chest-hinge left-hinge"></div>
             <div class="chest-hinge right-hinge"></div>
-            <div class="chest-label">Sandık</div>
+
 
             <!-- Black cube inside chest -->
             <div class="black-cube-container" id="black-cube-container">
@@ -205,7 +214,7 @@
 
     <!-- ==================== INVENTORY BAR ==================== -->
     <div id="inventory">
-        <div class="inventory-label">ENVANTER</div>
+        <div class="inventory-label">INVENTORY</div>
         <div class="inventory-slots">
             <div class="inventory-slot" id="key-slot">
                 <svg viewBox="0 0 80 30" width="40" height="15">
@@ -215,12 +224,12 @@
                     <circle cx="18" cy="15" r="14" fill="none" stroke="#C0C0C0" stroke-width="4" />
                     <circle cx="18" cy="15" r="6" fill="none" stroke="#888" stroke-width="2" />
                 </svg>
-                <span>Gümüş Anahtar</span>
+                <span>Silver Key</span>
             </div>
         </div>
     </div>
 
-    <!-- ==================== CODE INPUT MODAL ==================== -->
+    <!-- ==================== COLOR CODE MODAL ==================== -->
     <div id="code-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-gramophone-icon">
@@ -230,15 +239,12 @@
                         fill="#8B7355" stroke="#6B5335" stroke-width="1" />
                 </svg>
             </div>
-            <p class="modal-text">Gramofon bir şifre bekliyor...</p>
-            <div class="code-input-container">
-                <input type="text" id="code-input" maxlength="4" placeholder="____" autocomplete="off">
+
+            <div class="color-boxes-container">
+                <div class="color-box" id="color-box-1" onclick="cycleColor(0)"></div>
+                <div class="color-box" id="color-box-2" onclick="cycleColor(1)"></div>
+                <div class="color-box" id="color-box-3" onclick="cycleColor(2)"></div>
             </div>
-            <div class="modal-buttons">
-                <button id="code-submit" onclick="submitCode()">Gir</button>
-                <button id="code-cancel" onclick="closeModal()">İptal</button>
-            </div>
-            <p class="modal-hint" id="modal-hint"></p>
         </div>
     </div>
 
@@ -258,12 +264,13 @@
                 <div class="cube-face top-f"></div>
                 <div class="cube-face bottom-f"></div>
             </div>
-            <p class="final-text" id="final-text">Sevgi asla azalmaz.</p>
+            <p class="final-text" id="final-text">Love never fades.</p>
             <p class="final-subtitle">— Mr. Crown —</p>
         </div>
     </div>
 
     <script src="script.js"></script>
+    <script src="rubik.js"></script>
 </body>
 
 </html>

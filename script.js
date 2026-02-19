@@ -16,6 +16,15 @@ const state = {
 // ===== AUDIO CONTEXT (Web Audio API) =====
 let audioCtx = null;
 
+// ===== MP3 MUSIC =====
+const titleMusic = new Audio('Gymnopedie No 3.mp3');
+titleMusic.loop = true;
+titleMusic.volume = 0;
+
+const gameMusic = new Audio('Promising Relationship.mp3');
+gameMusic.loop = true;
+gameMusic.volume = 0;
+
 function initAudio() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -28,7 +37,7 @@ function playCrackle(duration = 2) {
     const bufferSize = audioCtx.sampleRate * duration;
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = buffer.getChannelData(0);
-    
+
     for (let i = 0; i < bufferSize; i++) {
         // Vinyl crackle effect
         if (Math.random() < 0.02) {
@@ -37,26 +46,26 @@ function playCrackle(duration = 2) {
             data[i] = (Math.random() - 0.5) * 0.02;
         }
     }
-    
+
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
-    
+
     const gainNode = audioCtx.createGain();
     gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.3);
     gainNode.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + duration - 0.5);
     gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
-    
+
     // Low-pass filter for warmer sound
     const filter = audioCtx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 800;
-    
+
     source.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     source.start();
-    
+
     return source;
 }
 
@@ -65,12 +74,12 @@ function playTone(freq = 440, duration = 0.3, type = 'sine') {
     initAudio();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    
+
     osc.type = type;
     osc.frequency.value = freq;
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    
+
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start();
@@ -84,13 +93,13 @@ function playEerieChord() {
     freqs.forEach((freq, i) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        
+
         osc.type = 'sine';
         osc.frequency.value = freq;
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
         gain.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.5 + i * 0.2);
         gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 3);
-        
+
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
@@ -103,16 +112,16 @@ function playDeepRumble() {
     initAudio();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    
+
     osc.type = 'sawtooth';
     osc.frequency.value = 40;
     gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2);
-    
+
     const filter = audioCtx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 200;
-    
+
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(audioCtx.destination);
@@ -125,16 +134,58 @@ function playClick() {
     initAudio();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    
+
     osc.type = 'square';
     osc.frequency.value = 1000;
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-    
+
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start();
     osc.stop(audioCtx.currentTime + 0.05);
+}
+
+// ===== MP3 MUSIC CONTROL =====
+function fadeIn(audio, targetVol = 0.5, duration = 2000) {
+    audio.volume = 0;
+    audio.play().catch(() => { });
+    const steps = 30;
+    const stepTime = duration / steps;
+    const volStep = targetVol / steps;
+    let current = 0;
+    const interval = setInterval(() => {
+        current++;
+        audio.volume = Math.min(volStep * current, targetVol);
+        if (current >= steps) clearInterval(interval);
+    }, stepTime);
+}
+
+function fadeOut(audio, duration = 1500) {
+    const steps = 25;
+    const stepTime = duration / steps;
+    const startVol = audio.volume;
+    const volStep = startVol / steps;
+    let current = 0;
+    const interval = setInterval(() => {
+        current++;
+        audio.volume = Math.max(startVol - volStep * current, 0);
+        if (current >= steps) {
+            clearInterval(interval);
+            audio.pause();
+        }
+    }, stepTime);
+}
+
+function startTitleMusic() {
+    fadeIn(titleMusic, 0.45, 2000);
+}
+
+function switchToGameMusic() {
+    fadeOut(titleMusic, 1500);
+    setTimeout(() => {
+        fadeIn(gameMusic, 0.35, 2500);
+    }, 800);
 }
 
 
@@ -142,7 +193,7 @@ function playClick() {
 function createParticles() {
     const container = document.getElementById('particles');
     const count = 25;
-    
+
     for (let i = 0; i < count; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -164,81 +215,60 @@ function initTitleScreen() {
         titleScreen.classList.add('hidden');
         initAudio();
         playEerieChord();
-    });
+        fadeIn(gameMusic, 0.35, 2500);
+    }, { once: true });
 }
 
 
-// ===== STAGE 1: MIRROR =====
-function handleMirrorClick() {
-    if (state.gameFinished) return;
-    
+
+// ===== LAMP TOGGLE =====
+function handleLampClick() {
+    const lamp = document.getElementById('lamp');
     playClick();
-    
-    if (state.mirrorRevealed) {
-        // Already revealed, show reminder
-        showMessage('Aynada bir sayı yazıyor: 5391... yoksa 1935 mi?');
-        return;
-    }
-    
-    state.mirrorRevealed = true;
-    
-    // Fog effect
-    const fog = document.getElementById('mirror-fog');
-    fog.classList.add('visible');
-    
-    // Show reversed number after fog settles
-    setTimeout(() => {
-        const text = document.getElementById('mirror-text');
-        text.classList.add('visible');
-        playEerieChord();
-    }, 800);
-    
-    // Flash raven silhouette
-    setTimeout(() => {
-        const raven = document.getElementById('mirror-raven');
-        raven.classList.add('flash');
-        
-        // Screen flash effect
-        const flash = document.createElement('div');
-        flash.className = 'screen-flash';
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 600);
-    }, 2000);
-    
-    // Show hint message
-    setTimeout(() => {
-        showMessage('Aynada buğunun arasından bir sayı beliriyor...');
-    }, 1200);
+    lamp.classList.toggle('on');
+    document.querySelectorAll('.wall-text').forEach(el => el.classList.toggle('visible'));
 }
 
+// ===== RUBIK'S CUBE =====
+function handleRubikClick() {
+    if (state.gameFinished) return;
+    playClick();
+    if (window.openRubikOverlay) window.openRubikOverlay();
+}
 
 // ===== STAGE 2: GRAMOPHONE =====
 function handleGramophoneClick() {
     if (state.gameFinished) return;
-    
+
     if (state.gramophonePlaying) {
-        showMessage('Gramofon çalıyor... Cızırtı odanın içinde yankılanıyor.');
         return;
     }
-    
+
     if (state.hasKey) {
-        showMessage('Gramofon hâlâ çalıyor... Melodisi tuhaf ama tanıdık.');
         return;
     }
-    
+
     playClick();
     openModal();
 }
 
+// ===== COLOR BOX SYSTEM =====
+const PRIMARY_COLORS = ['#c41e3a', '#ffd500', '#0051ba']; // Red, Yellow, Blue
+const ALL_COLORS = ['#c41e3a', '#ffd500', '#0051ba', '#009e60', '#ff5800', '#8b00ff']; // + Green, Orange, Purple
+const COLOR_NAMES = { '#c41e3a': 'red', '#ffd500': 'yellow', '#0051ba': 'blue', '#009e60': 'green', '#ff5800': 'orange', '#8b00ff': 'purple' };
+
+let colorState = [-1, -1, -1]; // -1 = empty/dark
+
 function openModal() {
     const modal = document.getElementById('code-modal');
     modal.classList.add('visible');
-    
-    const input = document.getElementById('code-input');
-    input.value = '';
-    input.focus();
-    
-    document.getElementById('modal-hint').textContent = '';
+    colorState = [-1, -1, -1];
+    updateColorBoxes();
+
+    // Close on background click
+    modal.onclick = function (e) {
+        if (e.target === modal) closeModal();
+    };
 }
 
 function closeModal() {
@@ -247,139 +277,148 @@ function closeModal() {
     playClick();
 }
 
-function submitCode() {
-    const input = document.getElementById('code-input');
-    const code = input.value.trim();
-    const hint = document.getElementById('modal-hint');
-    
-    if (code === '1935') {
-        // Correct code!
-        closeModal();
-        activateGramophone();
-    } else if (code === '') {
-        hint.textContent = 'Bir şifre girmelisin...';
-        input.classList.add('shake');
-        setTimeout(() => input.classList.remove('shake'), 500);
-    } else {
-        hint.textContent = 'Yanlış... Belki başka bir yerde ipucu vardır.';
-        input.classList.add('shake');
-        playTone(150, 0.3, 'sawtooth');
+function cycleColor(boxIndex) {
+    const colors = boxIndex < 2 ? PRIMARY_COLORS : ALL_COLORS;
+    colorState[boxIndex] = (colorState[boxIndex] + 1) % colors.length;
+    updateColorBoxes();
+    checkColorCode();
+}
+
+function updateColorBoxes() {
+    for (let i = 0; i < 3; i++) {
+        const colors = i < 2 ? PRIMARY_COLORS : ALL_COLORS;
+        const box = document.getElementById('color-box-' + (i + 1));
+        box.style.background = colorState[i] === -1 ? '#222' : colors[colorState[i]];
+    }
+}
+
+function getBoxColor(index) {
+    const colors = index < 2 ? PRIMARY_COLORS : ALL_COLORS;
+    if (colorState[index] === -1) return 'empty';
+    return COLOR_NAMES[colors[colorState[index]]];
+}
+
+function checkColorCode() {
+    const c1 = getBoxColor(0);
+    const c2 = getBoxColor(1);
+    const c3 = getBoxColor(2);
+
+    // Correct: (yellow, red, orange) OR (red, yellow, orange)
+    if (c3 === 'orange' && ((c1 === 'yellow' && c2 === 'red') || (c1 === 'red' && c2 === 'yellow'))) {
         setTimeout(() => {
-            input.classList.remove('shake');
-            input.value = '';
-            input.focus();
+            closeModal();
+            activateGramophone();
         }, 500);
     }
 }
 
 function activateGramophone() {
     state.gramophonePlaying = true;
-    
+
     // Start record spinning
     const record = document.getElementById('gramophone-record');
     record.classList.add('spinning');
-    
+
     // Move tone arm
     const arm = document.getElementById('gramophone-arm');
     arm.classList.add('playing');
-    
+
     // Horn vibration
     const horn = document.getElementById('gramophone-horn');
     horn.classList.add('vibrating');
-    
+
     // Play crackle sound
     playCrackle(4);
-    
-    showMessage('Gramofon cızırtılı bir sesle çalmaya başlıyor...');
-    
+
+
+
     // Open secret drawer after a delay
     setTimeout(() => {
         const drawer = document.getElementById('secret-drawer');
         drawer.classList.add('open');
         playTone(330, 0.5, 'triangle');
-        
-        showMessage('Gramofon altında gizli bir bölme açılıyor!');
+
+
     }, 2500);
 }
 
 function pickUpKey() {
     if (state.hasKey) return;
-    
+
     state.hasKey = true;
-    
+
     // Play pickup sound
     playTone(523, 0.15);
     setTimeout(() => playTone(659, 0.15), 100);
     setTimeout(() => playTone(784, 0.2), 200);
-    
+
     // Hide key in drawer
     const keyInDrawer = document.getElementById('key-in-drawer');
     keyInDrawer.style.opacity = '0';
     keyInDrawer.style.transform = 'scale(0)';
     keyInDrawer.style.transition = 'all 0.3s ease';
-    
+
     // Show key in inventory
     const keySlot = document.getElementById('key-slot');
     keySlot.classList.add('visible');
-    
-    showMessage('Gümüş Anahtarı aldın!');
+
+
 }
 
 
 // ===== STAGE 3: CHEST =====
 function handleChestClick() {
     if (state.gameFinished) return;
-    
+
     if (state.cubeRevealed) {
         // Cube is already visible, don't do anything on chest click
         return;
     }
-    
+
     if (state.chestOpened) {
-        showMessage('Sandık zaten açık...');
         return;
     }
-    
+
     playClick();
-    
+
     if (!state.hasKey) {
-        showMessage('Sandık kilitli. Bir anahtara ihtiyacın var...');
-        
+
+
         // Subtle shake on chest
         const chest = document.getElementById('chest');
         chest.style.animation = 'shake 0.3s ease';
         setTimeout(() => chest.style.animation = '', 300);
         return;
     }
-    
+
     // Open the chest!
     state.chestOpened = true;
-    
+
     // Unlock animation
     const lock = document.getElementById('chest-lock');
     lock.classList.add('unlocked');
     playTone(440, 0.2);
-    
+
     // Open lid
     setTimeout(() => {
         const lid = document.getElementById('chest-lid');
         lid.classList.add('open');
         playDeepRumble();
-        
+
         // Remove key from inventory
         const keySlot = document.getElementById('key-slot');
         keySlot.classList.remove('visible');
         state.hasKey = false;
     }, 500);
-    
+
     // Reveal black cube
     setTimeout(() => {
         state.cubeRevealed = true;
         const cubeContainer = document.getElementById('black-cube-container');
         cubeContainer.classList.add('visible');
-        
+
         playEerieChord();
-        showMessage('Sandığın içinden gizemli bir Siyah Küp çıkıyor...');
+
     }, 1800);
 }
 
@@ -387,24 +426,24 @@ function handleChestClick() {
 // ===== FINAL: BLACK CUBE =====
 function handleCubeClick() {
     if (state.gameFinished) return;
-    
+
     state.gameFinished = true;
-    
+
     // Deep ominous sound
     playDeepRumble();
     playEerieChord();
-    
+
     // Flash screen
     const flash = document.createElement('div');
     flash.className = 'screen-flash';
     document.body.appendChild(flash);
     setTimeout(() => flash.remove(), 600);
-    
+
     // Fade to black and show final screen
     setTimeout(() => {
         const finalScreen = document.getElementById('final-screen');
         finalScreen.classList.add('visible');
-        
+
         // Play one last eerie chord
         setTimeout(() => playEerieChord(), 2000);
     }, 1000);
@@ -417,15 +456,15 @@ let messageTimeout = null;
 function showMessage(text, duration = 3000) {
     const overlay = document.getElementById('message-overlay');
     const messageText = document.getElementById('message-text');
-    
+
     // Clear previous timeout
     if (messageTimeout) {
         clearTimeout(messageTimeout);
     }
-    
+
     messageText.textContent = text;
     overlay.classList.add('visible');
-    
+
     messageTimeout = setTimeout(() => {
         overlay.classList.remove('visible');
     }, duration);
@@ -436,9 +475,7 @@ function showMessage(text, duration = 3000) {
 document.addEventListener('keydown', (e) => {
     const modal = document.getElementById('code-modal');
     if (modal.classList.contains('visible')) {
-        if (e.key === 'Enter') {
-            submitCode();
-        } else if (e.key === 'Escape') {
+        if (e.key === 'Escape') {
             closeModal();
         }
     }
